@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>Directions service</title>
+    <link href="default.css" rel="stylesheet">
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=true"></script>
+    <script>
+var directionsDisplay;
+var directionsService = new google.maps.DirectionsService();
+var map;
+var panel;
+var myPosition;
+
+function getLocation(onSuccess, onFailure) {
+	  if (navigator.geolocation) {
+	    navigator.geolocation.getCurrentPosition(onSuccess);
+	  } else{ 
+		  onFailure();
+	  }
+		  
+}
+
+
+function showPosition(position) {
+	  directionsDisplay = new google.maps.DirectionsRenderer();
+	  myPosition = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+	  var mapOptions = {
+	    zoom:7,
+	    mapTypeId: google.maps.MapTypeId.ROADMAP,
+	    center: myPosition
+	  }
+	  map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+	  var marker = new google.maps.Marker({
+	      position: myPosition,
+	      map: map,
+	      title: 'My position'
+	  });
+	  directionsDisplay.setMap(map);
+}	
+
+function showError() {
+	panel.innerHTML="Geolocation api is not suported or is disabled"; 
+}	
+
+function initialize() {
+  panel = document.getElementById("panel");
+  getLocation(showPosition, showError);
+}
+
+function calcRoute() {
+  var dest = document.getElementById('dest').value;
+  var request = {
+      origin:myPosition.toUrlValue(),
+      destination:dest,
+      travelMode: google.maps.DirectionsTravelMode.DRIVING
+  };
+  directionsService.route(request, function(response, status) {
+    if (status == google.maps.DirectionsStatus.OK) {
+      directionsDisplay.setDirections(response);
+    }
+  });
+}
+
+google.maps.event.addDomListener(window, 'load', initialize);
+
+    </script>
+  </head>
+  <body>
+    <div id="panel">
+	    <b>Destination: </b>
+	    <input type="text" id="dest" />
+	    <input type="button" onclick="calcRoute();" value="Go!"/>
+    </div>
+    <div id="map-canvas"></div>
+  </body>
+</html>
